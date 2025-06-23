@@ -5,8 +5,8 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: "mysql123456"
+    username: your_username
+    password: "your_password"
     url: jdbc:mysql://127.0.0.1:3306/your_db_name?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
   #    your_db_name是数据库的名字
   servlet:
