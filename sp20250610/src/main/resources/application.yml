@@ -1,0 +1,35 @@
+server:
+  port: 7080
+
+#数据库配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: "mysql123456"
+    url: jdbc:mysql://127.0.0.1:3306/vue20250610?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+  #    vue20250424是数据库的名字
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  mvc:
+    cors:
+      allowed-origins: "*"
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+
+#mybatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+#    classpath指的是resource的目录
+#    日志
+#    数据库下划线数据转驼峰
+
+# 文件上传路径配置
+file:
+  upload:
+    path: D:\web\vue20250610\files

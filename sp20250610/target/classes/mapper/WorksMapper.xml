@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.sp20250610.mapper.WorksMapper">
+
+    <!-- insert语句 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO works(
+            username, title, category, description,
+            location_lng, location_lat, location_address,
+            created_at, cover, role
+        ) VALUES (
+                     #{username}, #{title}, #{category}, #{description},
+                     #{locationLng}, #{locationLat}, #{locationAddress},
+                     #{createdAt}, #{cover}, #{role}
+                 )
+    </insert>
+    <!-- works后面是数据表的字段，values是实体类里面的 -->
+
+
+    <!-- 根据作品审查状态查询 -->
+    <select id="selectByWorkRole" resultType="com.example.sp20250610.entity.Works">
+        SELECT * FROM `works`
+        WHERE role = #{role}
+    </select>
+
+    <select id="findAllApprovedWorks" resultType="com.example.sp20250610.entity.Works">
+        SELECT * FROM works
+        WHERE role = 'true'
+        <if test="query != null and query != ''">
+            AND (title LIKE CONCAT('%', #{query}, '%') OR username LIKE CONCAT('%', #{query}, '%'))
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
