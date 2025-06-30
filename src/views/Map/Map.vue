@@ -126,7 +126,7 @@ const loadAMapScript = () => {
 
     window.amapLoading = true;
     const script = document.createElement("script");
-    script.src = `https://webapi.amap.com/maps?v=2.0&key=fe5fdc531baf1d10afff9248f6839916`;
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=your_apikey`;
     script.onload = () => {
       window.amapLoading = false;
       resolve();
