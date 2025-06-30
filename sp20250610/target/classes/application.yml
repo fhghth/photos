@@ -6,9 +6,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: "mysql123456"
-    url: jdbc:mysql://127.0.0.1:3306/vue20250610?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
-  #    vue20250424是数据库的名字
+    password: "your_password"
+    url: jdbc:mysql://127.0.0.1:3306/your_dbname?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+  #    your_dbname是数据库的名字
   servlet:
     multipart:
       max-file-size: 10MB
