@@ -33,6 +33,13 @@ const routes = [
     redirect: "/manager/dashboard",
     children: [
       {
+        path: "welcome",
+        name: "welcome",
+        component: () => import("../views/Admin/Welcome.vue"),
+        meta: { requiresAdmin: true }, // 标记需要管理员权限
+      },
+
+      {
         path: "dashboard",
         name: "dashboard",
         component: () => import("../views/Dashboard.vue"),
@@ -50,7 +57,13 @@ const routes = [
             name: "user",
             component: () => import("../views/Admin/User.vue"),
           },
-          //内容（作品）管理
+          //所有作品管理
+          {
+            path: "allworks",
+            name: "allworks",
+            component: () => import("../views/Admin/AllWorks.vue"),
+          },
+          //审核（作品）管理
           {
             path: "works",
             name: "works",
@@ -58,9 +71,9 @@ const routes = [
           },
           //内容（评论）管理
           {
-            path: "comment",
-            name: "comment",
-            component: () => import("../views/Admin/Works.vue"),
+            path: "comments",
+            name: "comments",
+            component: () => import("../views/Admin/Comments.vue"),
           },
         ],
       },
@@ -75,6 +88,16 @@ const routes = [
     path: "/person",
     name: "person",
     component: () => import("../views/Person.vue"),
+  },
+  {
+    path: "/mywork",
+    name: "mywork",
+    component: () => import("../views/Personal/myWork.vue"),
+  },
+  {
+    path: "/editmy",
+    name: "editmy",
+    component: () => import("../views/Personal/editMy.vue"),
   },
   {
     path: "/uploadmodal",

@@ -12,5 +12,9 @@ public interface UsersMapper {
 
     void insert(Users users);
 
+    void update(Users users);
+
+    Users selectById(@Param("id") Integer id);
+
     //接口方法在这里定义，在xml中实现
 }

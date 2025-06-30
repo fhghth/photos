@@ -1,6 +1,7 @@
 package com.example.sp20250610.service;
 
 import com.example.sp20250610.entity.Users;
+import com.example.sp20250610.entity.WorkComments;
 import com.example.sp20250610.entity.Works;
 import com.example.sp20250610.exception.CustomerException;
 import com.example.sp20250610.mapper.AdminMapper;
@@ -36,8 +37,16 @@ public class AdminService {
         List<Users> list = adminMapper.selectByRole(role);
         return PageInfo.of(list);
     }
-    //作品信息全查找（地图）
-    public List<Works> selectAllWorks() {
+    //作品信息全查找(用户作品)
+    public PageInfo<Works> selectAllWorks(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Works> list = adminMapper.selectAllWorks();
+        return PageInfo.of(list);
+
+    }
+
+    //作品地图
+    public List<Works> selectAllWorksMap() {
         return adminMapper.selectAllWorks();
 
     }
@@ -46,6 +55,15 @@ public class AdminService {
         List<Works> list = adminMapper.selectByWorkRole(role);
         return PageInfo.of(list);
     }
+
+    //评论列表
+    public PageInfo<WorkComments> selectAllComment(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<WorkComments> list = adminMapper.selectAllComment();
+        return PageInfo.of(list);
+    }
+
+
     //审核通过
     @Transactional
     public void approveWork(BigInteger id) {
@@ -71,6 +89,12 @@ public class AdminService {
         // 2. 更新审核状态
         work.setRole("back"); // 设置为退回
         adminMapper.updateReviewStatus(work);
+    }
+
+    @Transactional
+    public void deleteComment(BigInteger id, BigInteger workId) {
+        adminMapper.deleteComment(id);
+        adminMapper.decrementCommentCount(workId);
     }
 
 }

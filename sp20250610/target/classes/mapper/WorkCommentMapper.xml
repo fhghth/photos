@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.sp20250610.mapper.WorkCommentMapper">
+
+    <resultMap id="commentResultMap" type="com.example.sp20250610.entity.WorkComments">
+        <id property="id" column="id" />
+        <result property="workId" column="work_id" />
+        <result property="userId" column="user_id" />
+        <result property="username" column="username" />
+        <result property="comment" column="comment" />
+        <result property="commentTime" column="comment_time" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="parentCommentId" column="parent_comment_id" />
+        <result property="avatar" column="avatar" />
+    </resultMap>
+
+    <select id="findByWorkId" resultMap="commentResultMap">
+        SELECT c.*, u.avatar
+        FROM work_comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.work_id = #{workId}
+          AND c.is_deleted = 0
+        ORDER BY c.comment_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.example.sp20250610.entity.WorkComments">
+        INSERT INTO work_comments (
+            work_id, user_id, username, comment,
+            comment_time, is_deleted, parent_comment_id
+        ) VALUES (
+                     #{workId}, #{userId}, #{username}, #{comment},
+                     #{commentTime}, #{isDeleted}, #{parentCommentId}
+                 )
+    </insert>
+
+    <update id="incrementCommentCount">
+        UPDATE works
+        SET comment_count = comment_count + 1
+        WHERE id = #{workId}
+    </update>
+</mapper>

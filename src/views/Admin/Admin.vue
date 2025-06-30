@@ -3,10 +3,9 @@
 import { reactive, ref } from "vue";
 import { adminApi } from "../../utils/request";
 import { ElMessage, ElNotification as notify } from "element-plus";
+import PageHeader from "../../components/layout/PageHeader.vue";
+import { Search } from "@element-plus/icons-vue";
 
-const onBack = () => {
-  notify("Back");
-};
 const input = ref("");
 const data = reactive({
   name: null,
@@ -48,21 +47,14 @@ load();
 </script>
 <!-- 2 -->
 <template>
-  <div aria-label="A complete example of page header">
-    <el-page-header @back="onBack">
-      <template #breadcrumb>
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item :to="{ path: './page-header.html' }">
-            homepage
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>
-            <a href="./page-header.html">route 1</a>
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>route 2</el-breadcrumb-item>
-        </el-breadcrumb>
-      </template>
-    </el-page-header>
-  </div>
+  <PageHeader
+    :items="[
+      { label: '首页', to: '/manager/welcome' },
+      { label: '用户管理', to: '/manager/dashboard/user' },
+      { label: '管理员信息' },
+    ]"
+    title="管理员信息"
+  />
   <div>
     <div class="card">
       <div>
@@ -71,15 +63,11 @@ load();
           style="width: 240px"
           placeholder="Please input"
         />
-        <button>
-          <el-icon><Search /></el-icon>
-        </button>
+        <el-button :icon="Search" circle />
       </div>
       <div style="padding: 10px">
-        <el-button type="primary">Primary</el-button>
-        <el-button type="success">Success</el-button>
-        <el-button type="warning">Warning</el-button>
-        <el-button type="danger">Danger</el-button>
+        <el-button type="success">新增</el-button>
+        <el-button type="danger">删除</el-button>
       </div>
       <div>
         <!-- <el-table :data="tableData" border style="width: 100%">

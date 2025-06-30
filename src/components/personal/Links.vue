@@ -42,7 +42,7 @@
 
 <script setup>
 import { Icon } from "@vicons/utils";
-// 可前往 https://www.xicons.org 自行挑选并在此处引入
+
 import {
   Link,
   Blog,
@@ -100,8 +100,10 @@ const jumpLink = (data) => {
 
   // 创建内部路由映射
   const routeMap = {
-    "发布作品": "/uploadmodal",
-    "返回首页": "/home"
+    发布作品: "/uploadmodal",
+    我的作品: "/mywork",
+    返回首页: "/home",
+    编辑资料: "/editmy",
   };
 
   // 检查是否为内部路由

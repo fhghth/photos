@@ -26,4 +26,19 @@ public class UsersService {
     public void register(Users users) {
         usersMapper.insert(users);
     }
+
+    public void edit(Users users) {
+        // 如果有头像文件但处理失败，不更新头像
+        if (users.getAvatar() == null) {
+            // 保持原有头像不变
+            Users existingUser = usersMapper.selectById(users.getId());
+            users.setAvatar(existingUser.getAvatar());
+        }
+        usersMapper.update(users);
+    }
+
+    // 添加根据ID查询的方法
+    public Users selectById(Integer id) {
+        return usersMapper.selectById(id);
+    }
 }

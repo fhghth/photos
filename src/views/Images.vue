@@ -1,4 +1,5 @@
 <template>
+  <el-backtop :right="100" :bottom="100" />
   <div class="home">
     <Navbar @upload="showUploadModal = true" />
 
@@ -97,7 +98,7 @@
           <h3 class="card-title">{{ work.title }}</h3>
           <div class="card-info">
             <span>by {{ work.username }}</span>
-            <span>{{ work.likes }}人喜欢</span>
+            <span>{{ work.likeCount }}人喜欢</span>
           </div>
         </div>
       </div>
@@ -151,6 +152,10 @@ const categoryColors = {
   food: "#FFD666",
   macro: "#9770DB",
   street: "#37A2DA",
+  documentary: "#FF6B6B",
+  sports: "#4ECDC4",
+  travel: "#45B7D1",
+  abstract: "#96CEB4",
 };
 
 // 获取分类标签文字
@@ -162,6 +167,17 @@ const getCategoryLabel = (categoryValue) => {
 // 选择分类
 const selectCategory = (index) => {
   activeCategoryIndex.value = index;
+
+  // 更新URL参数
+  const categoryValue = categories.value[index].value;
+  const currentQuery = { ...route.query };
+  currentQuery.category = categoryValue;
+
+  // 移除search参数，因为现在按分类筛选
+  delete currentQuery.search;
+  searchKeyword.value = "";
+
+  router.push({ query: currentQuery });
 };
 
 // 滚动分类标签
@@ -194,6 +210,7 @@ const viewWorkDetail = (workId) => {
 // 清除搜索
 const clearSearch = () => {
   searchKeyword.value = "";
+  activeCategoryIndex.value = null;
   router.push({ query: {} });
 };
 
@@ -235,15 +252,45 @@ const stopRouteWatch = watch(
   }
 );
 
+// 监听分类参数变化
+const stopCategoryWatch = watch(
+  () => route.query.category,
+  (newCategory) => {
+    if (newCategory) {
+      const categoryIndex = categories.value.findIndex(
+        (cat) => cat.value === newCategory
+      );
+      if (categoryIndex !== -1) {
+        activeCategoryIndex.value = categoryIndex;
+      }
+    } else {
+      activeCategoryIndex.value = null;
+    }
+  }
+);
+
 // 组件挂载时初始化
 onMounted(() => {
   searchKeyword.value = route.query.search || "";
+
+  // 检查是否有分类参数
+  if (route.query.category) {
+    const categoryValue = route.query.category;
+    const categoryIndex = categories.value.findIndex(
+      (cat) => cat.value === categoryValue
+    );
+    if (categoryIndex !== -1) {
+      activeCategoryIndex.value = categoryIndex;
+    }
+  }
+
   loadWorks();
 });
 
 // 组件卸载时停止监听
 onUnmounted(() => {
   stopRouteWatch();
+  stopCategoryWatch();
 });
 
 // 过滤作品

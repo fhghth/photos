@@ -1,4 +1,5 @@
 <template>
+  <el-backtop :right="100" :bottom="100" />
   <div class="work-detail">
     <!-- 返回按钮 -->
     <div class="back-button" @click="goBack">
@@ -57,16 +58,37 @@
 
           <!-- 作品统计数据 - 移动到下方 -->
           <div class="work-stats">
+            <el-button
+              color="#626aef"
+              :dark="isDark"
+              plain
+              circle
+              :loading="likeLoading"
+              @click="handleLike"
+            >
+              <el-icon v-if="!likeLoading">
+                <Pointer v-if="!isLiked" />
+                <Pointer style="color: #ff4d4f" v-else />
+              </el-icon>
+            </el-button>
+            <el-button color="#626aef" :dark="isDark" plain circle
+              ><el-icon><StarFilled /></el-icon
+            ></el-button>
+            <el-button color="#626aef" :dark="isDark" plain circle
+              ><el-icon><Share /></el-icon
+            ></el-button>
+          </div>
+          <div class="work-stats">
             <div class="stat-item">
-              <span class="stat-value">{{ work.views || "0" }}</span>
+              <span class="stat-value">{{ work.viewCount || "0" }}</span>
               <span class="stat-label">浏览量</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ work.likes || "0" }}</span>
+              <span class="stat-value">{{ work.likeCount || "0" }}</span>
               <span class="stat-label">喜欢</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ work.comments || "0" }}</span>
+              <span class="stat-value">{{ work.commentCount || "0" }}</span>
               <span class="stat-label">评论</span>
             </div>
             <div class="stat-item">
@@ -80,7 +102,7 @@
         <div class="author-info">
           <div class="author-header">
             <img
-              :src="getImageUrl(work.avatar) || defaultAvatar"
+              :src="getAvatarUrl(work.avatar) || defaultAvatar"
               alt="作者头像"
               class="author-avatar"
             />
@@ -176,6 +198,7 @@
       </div>
 
       <!-- 底部评论区域 -->
+      <!-- 评论区域 -->
       <div v-if="work" class="comments-section">
         <h2>
           评论 <span>({{ comments.length }})</span>
@@ -183,7 +206,7 @@
 
         <div class="add-comment">
           <img
-            :src="currentUser.avatar || defaultAvatar"
+            :src="getAvatarUrl(currentUser.avatar) || defaultAvatar"
             alt="用户头像"
             class="user-avatar"
           />
@@ -191,47 +214,76 @@
             <textarea
               v-model="newComment"
               placeholder="写下你的评论..."
+              :disabled="!currentUser.id"
             ></textarea>
-            <button @click="submitComment">发表评论</button>
+            <button
+              @click="submitComment"
+              :disabled="!newComment.trim() || submittingComment"
+            >
+              {{ submittingComment ? "提交中..." : "发表评论" }}
+            </button>
           </div>
         </div>
 
-        <div class="comments-list">
+        <div v-if="comments.length > 0" class="comments-list">
           <div
-            v-for="(comment, index) in comments"
-            :key="index"
+            v-for="comment in comments"
+            :key="comment.id"
             class="comment-item"
           >
             <img
-              :src="comment.avatar || defaultAvatar"
+              :src="getAvatarUrl(comment.avatar) || defaultAvatar"
               alt="用户头像"
               class="comment-avatar"
             />
             <div class="comment-content">
               <div class="comment-header">
                 <h4>{{ comment.username }}</h4>
-                <span class="comment-time">{{ comment.time }}</span>
+                <span class="comment-time">{{
+                  formatCommentTime(comment.commentTime)
+                }}</span>
               </div>
-              <p>{{ comment.content }}</p>
+              <p>{{ comment.comment }}</p>
               <div class="comment-actions">
-                <button>回复</button>
+                <button @click="replyToComment(comment)">回复</button>
                 <button>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"
-                    />
-                  </svg>
-                  {{ comment.likes }}
+                  <el-icon><Star /></el-icon>
+                  {{ comment.likes || 0 }}
                 </button>
+              </div>
+
+              <!-- 回复区域 -->
+              <div
+                v-if="comment.replies && comment.replies.length > 0"
+                class="replies"
+              >
+                <div
+                  v-for="reply in comment.replies"
+                  :key="reply.id"
+                  class="reply-item"
+                >
+                  <img
+                    :src="getAvatarUrl(reply.avatar) || defaultAvatar"
+                    alt="用户头像"
+                    class="reply-avatar"
+                  />
+                  <div class="reply-content">
+                    <div class="reply-header">
+                      <h5>{{ reply.username }}</h5>
+                      <span class="reply-time">{{
+                        formatCommentTime(reply.commentTime)
+                      }}</span>
+                    </div>
+                    <p>{{ reply.comment }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <div v-else class="no-comments">
+          <el-empty description="暂无评论，快来发表第一条评论吧" />
         </div>
       </div>
     </div>
@@ -239,17 +291,62 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { photoApi } from "@/utils/request.js";
-import { Loading } from "@element-plus/icons-vue";
+import { Loading, Share, StarFilled, Pointer } from "@element-plus/icons-vue";
 
+//获取用户状态、
+const currentUser = ref(
+  JSON.parse(localStorage.getItem("code_user")) || {
+    username: "游客",
+    avatar: "",
+    id: null,
+  }
+);
+
+//路由
 const router = useRouter();
 const route = useRoute();
+
+//作品状态
+const isLiked = ref(false); // 用户是否已点赞
+const isShared = ref(false); // 用户是否已分享
+const likeLoading = ref(false); // 点赞加载状态
+const collectLoading = ref(false); // 收藏加载状态
+const shareLoading = ref(false); // 分享加载状态
+
+// 检查用户是否已点赞
+const checkLikeStatus = async () => {
+  if (!currentUser.value?.id || !work.value?.id) {
+    isLiked.value = false;
+    return;
+  }
+  try {
+    const res = await photoApi.checkLikeStatus({
+      workId: work.value.id,
+      userId: currentUser.value.id,
+    });
+    if (res.code === "200") {
+      isLiked.value = !!res.data.liked;
+    }
+  } catch (error) {
+    isLiked.value = false;
+    console.error("检查点赞状态失败:", error);
+  }
+};
 
 // 默认头像
 const defaultAvatar =
   "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+
+const getAvatarUrl = (avatar) => {
+  if (!avatar) return defaultAvatar;
+  if (avatar.startsWith("data:image")) return avatar;
+  if (avatar.startsWith("http")) return avatar;
+  if (avatar.startsWith("/")) return "http://localhost:7080" + avatar;
+  return "http://localhost:7080/avatars/" + avatar;
+};
 
 // 返回功能
 const goBack = () => {
@@ -318,7 +415,7 @@ const getImageUrl = (imagePath) => {
   if (!imagePath) return defaultAvatar;
   return IMAGE_BASE_URL + imagePath;
 };
-
+//当前
 const currentImage = computed(() => {
   if (work.value?.images?.length > 0) {
     return getImageUrl(work.value.images[currentIndex.value].imagePath);
@@ -335,61 +432,174 @@ const handleImageError = (e) => {
   e.target.onerror = null;
 };
 
-// 当前用户信息
-const currentUser = ref({
-  username: "当前用户",
-  avatar: "",
-});
-
+//
+//
+//
 // 评论功能
 const newComment = ref("");
-const comments = ref([
-  {
-    id: 1,
-    username: "摄影爱好者",
-    avatar:
-      "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
-    content: "这光线捕捉得太完美了！曲线和倒影形成绝妙的对称。",
-    time: "2小时前",
-    likes: 24,
-  },
-  {
-    id: 2,
-    username: "旅行达人",
-    avatar:
-      "https://cube.elemecdn.com/2/11/6535bcfb26e4c79b48ddde44f4b6fpng.png",
-    content: "现场比照片还要震撼！这真的是摄影天堂。",
-    time: "5小时前",
-    likes: 18,
-  },
-  {
-    id: 3,
-    username: "风光摄影师",
-    avatar:
-      "https://cube.elemecdn.com/3/28/bbf893f792f03a54408b3b7a7ebf0png.png",
-    content: "请问这个拍摄点具体位置在哪里？我想下个月去采风。",
-    time: "1天前",
-    likes: 12,
-  },
-]);
+const comments = ref([]);
+const submittingComment = ref(false);
 
-// 提交评论
-const submitComment = () => {
-  if (newComment.value.trim()) {
-    comments.value.unshift({
-      id: comments.value.length + 1,
-      username: currentUser.value.username,
-      avatar: currentUser.value.avatar,
-      content: newComment.value,
-      time: "刚刚",
-      likes: 0,
+// 格式化评论时间
+const formatCommentTime = (timestamp) => {
+  if (!timestamp) return "未知时间";
+
+  const now = new Date();
+  const commentTime = new Date(timestamp);
+  const diffSeconds = Math.floor((now - commentTime) / 1000);
+
+  if (diffSeconds < 60) {
+    return "刚刚";
+  } else if (diffSeconds < 3600) {
+    return `${Math.floor(diffSeconds / 60)}分钟前`;
+  } else if (diffSeconds < 86400) {
+    return `${Math.floor(diffSeconds / 3600)}小时前`;
+  } else {
+    return commentTime.toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
-    newComment.value = "";
-    if (work.value) {
-      work.value.comments = comments.value.length;
-    }
   }
 };
+
+// 加载评论
+const loadComments = async () => {
+  if (!work.value?.id) return;
+
+  try {
+    const res = await photoApi.getComments(work.value.id);
+    if (res.code === "200") {
+      comments.value = res.data;
+
+      // 更新作品的评论数
+      if (comments.value.length > 0) {
+        work.value.commentCount = comments.value.length;
+      }
+    }
+  } catch (error) {
+    console.error("加载评论失败:", error);
+    ElMessage.error("加载评论失败");
+  }
+};
+
+// 提交评论
+const submitComment = async () => {
+  if (!currentUser.value?.id) {
+    ElMessage.warning("请先登录后再评论");
+    return;
+  }
+
+  if (!newComment.value.trim()) {
+    ElMessage.warning("评论内容不能为空");
+    return;
+  }
+
+  submittingComment.value = true;
+
+  try {
+    const commentData = {
+      workId: work.value.id,
+      userId: currentUser.value.id,
+      username: currentUser.value.username,
+      comment: newComment.value.trim(),
+    };
+
+    const res = await photoApi.submitComment(commentData);
+    if (res.code === "200") {
+      // 添加新评论到列表顶部
+      comments.value.unshift({
+        ...res.data,
+        avatar: currentUser.value.avatar,
+      });
+
+      // 更新评论计数
+      work.value.commentCount = comments.value.length;
+
+      // 清空输入框
+      newComment.value = "";
+
+      ElMessage.success("评论发表成功");
+    }
+  } catch (error) {
+    console.error("提交评论失败:", error);
+    ElMessage.error("评论发表失败");
+  } finally {
+    submittingComment.value = false;
+  }
+};
+
+// 回复评论
+const replyToComment = (comment) => {
+  // 实现回复功能
+  ElMessage.info("回复功能开发中");
+};
+
+// 在加载作品详情后加载评论
+watch(
+  () => work.value,
+  (newWork) => {
+    if (newWork) {
+      loadComments();
+    }
+  }
+);
+//
+//
+//
+// 增加浏览量的函数
+const incrementView = async () => {
+  if (!work.value?.id) return;
+  try {
+    const res = await photoApi.viewPhoto({
+      workId: work.value.id,
+    });
+    if (res.code === "200") {
+      work.value.viewCount = res.data.viewCount;
+
+      console.log("浏览量", res.data);
+    }
+  } catch (error) {
+    console.error("增加浏览量失败:", error);
+  }
+};
+
+//点赞
+// 处理点赞
+const handleLike = async () => {
+  if (!currentUser.value?.id) {
+    ElMessage.warning("请先登录后再点赞");
+    return;
+  }
+  if (!work.value?.id) return;
+
+  likeLoading.value = true;
+  try {
+    const res = await photoApi.likePhoto({
+      workId: work.value.id,
+      userId: currentUser.value.id,
+    });
+    if (res.code === "200") {
+      // 点赞状态切换
+      isLiked.value = !isLiked.value;
+      work.value.likeCount = res.data.likeCount;
+      ElMessage.success(isLiked.value ? "点赞成功!" : "已取消点赞");
+
+      console.log(res.data);
+    }
+  } catch (error) {
+    ElMessage.error("操作失败，请稍后再试");
+    console.error("点赞操作失败:", error);
+  } finally {
+    likeLoading.value = false;
+  }
+};
+
+//收藏
+const submitCollect = async () => {};
+
+// 转发
+const submitShare = async () => {};
 
 // 自动轮播
 let carouselTimer = null;
@@ -407,9 +617,6 @@ onMounted(async () => {
   try {
     const res = await photoApi.getPhotoDetail(id);
     if (res.code === "200" && res.data) {
-      work.value = res.data;
-
-      // 确保数据结构完整
       work.value = {
         title: "未命名作品",
         category: "landscape",
@@ -421,17 +628,16 @@ onMounted(async () => {
         locationLng: 0,
         locationLat: 0,
         description: "暂无描述",
-        views: 0,
-        likes: 0,
-        comments: 0,
+        viewCount: 0,
+        likeCount: 0,
+        commentCount: 0,
         collections: 0,
         images: [],
-        ...work.value,
+        ...res.data,
       };
-
-      // 确保cover字段存在
       work.value.cover =
         work.value.cover || work.value.images?.[0]?.imagePath || "";
+      console.log("作品详情接口返回：", res.data);
     } else {
       work.value = null;
     }
@@ -443,6 +649,8 @@ onMounted(async () => {
   }
 
   if (work.value) {
+    await incrementView(); // 先增加浏览量
+    await checkLikeStatus(); // 再检查点赞状态
     startCarousel();
   }
 
@@ -451,6 +659,20 @@ onMounted(async () => {
       clearInterval(carouselTimer);
     }
   };
+});
+
+// 监听work变化，自动检查点赞状态（防止切换作品时状态不对）
+watch(
+  () => work.value?.id,
+  (newVal) => {
+    if (newVal) {
+      checkLikeStatus();
+    }
+  }
+);
+
+watch(work, (val) => {
+  console.log("work.avatar:", val?.avatar);
 });
 </script>
 
@@ -907,6 +1129,65 @@ onMounted(async () => {
 
 .comment-actions button:hover {
   color: #9770db;
+}
+
+/* 回复区域 */
+.replies {
+  margin-top: 15px;
+  padding-left: 15px;
+  border-left: 2px solid #eee;
+}
+
+.reply-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+}
+
+.reply-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.reply-content {
+  flex: 1;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.reply-header h5 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.reply-time {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.reply-content p {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.no-comments {
+  text-align: center;
+  padding: 30px 0;
+  color: #888;
 }
 
 /* 响应式设计 */

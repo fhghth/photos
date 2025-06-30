@@ -9,6 +9,15 @@ public class WorkImage {
     private BigInteger workId;
     private String imagePath;
     private Boolean isCover;
+    private Boolean hasWatermark = false;
+
+    public Boolean getHasWatermark() {
+        return hasWatermark;
+    }
+
+    public void setHasWatermark(Boolean hasWatermark) {
+        this.hasWatermark = hasWatermark;
+    }
 
     public BigInteger getId() {
         return id;

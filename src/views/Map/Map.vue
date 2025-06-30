@@ -156,10 +156,10 @@ const initMap = async () => {
       mapStyle: "amap://styles/grey",
     });
 
-    // 添加控件（V2.x写法）
+    // 添加控件
     mapInstance.addControl(new AMap.ControlBar());
     mapInstance.addControl(new AMap.Scale());
-    // mapInstance.addControl(new AMap.HawkEye()); // 如有报错可注释掉
+    // mapInstance.addControl(new AMap.HawkEye());
 
     console.log("地图初始化完成");
     return true;
@@ -172,7 +172,7 @@ const initMap = async () => {
 // 获取数据
 const fetchPhotos = async () => {
   try {
-    const res = await adminApi.content.getAllPhotos();
+    const res = await adminApi.content.getAllPhotosMap();
     if (res.code === "200" && res.data) {
       photos.value = res.data;
       console.log("获取作品数据成功，共", photos.value.length, "件作品");

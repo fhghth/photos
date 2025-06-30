@@ -3,6 +3,25 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.example.sp20250610.mapper.WorksMapper">
 
+    <resultMap id="WorksMap" type="com.example.sp20250610.entity.Works">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="title" column="title"/>
+        <result property="category" column="category"/>
+        <result property="description" column="description"/>
+        <result property="locationLng" column="location_lng"/>
+        <result property="locationLat" column="location_lat"/>
+        <result property="locationAddress" column="location_address"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="role" column="role"/>
+        <result property="cover" column="cover"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="avatar" column="avatar"/>
+        <result property="watermarkConfig" column="watermark_config"/>
+    </resultMap>
+
     <!-- insert语句 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO works(
@@ -15,22 +34,79 @@
                      #{createdAt}, #{cover}, #{role}
                  )
     </insert>
+
+<!--    删除-->
+    <delete id="deleteById">
+        DELETE FROM works WHERE id = #{id}
+    </delete>
     <!-- works后面是数据表的字段，values是实体类里面的 -->
 
 
     <!-- 根据作品审查状态查询 -->
     <select id="selectByWorkRole" resultType="com.example.sp20250610.entity.Works">
-        SELECT * FROM `works`
-        WHERE role = #{role}
+        SELECT w.*, u.avatar 
+        FROM `works` w
+        LEFT JOIN `users` u ON w.username = u.username
+        WHERE w.role = #{role}
     </select>
 
     <select id="findAllApprovedWorks" resultType="com.example.sp20250610.entity.Works">
-        SELECT * FROM works
-        WHERE role = 'true'
+        SELECT w.*, u.avatar 
+        FROM works w
+        LEFT JOIN `users` u ON w.username = u.username
+        WHERE w.role = 'true'
         <if test="query != null and query != ''">
-            AND (title LIKE CONCAT('%', #{query}, '%') OR username LIKE CONCAT('%', #{query}, '%'))
+            AND (w.title LIKE CONCAT('%', #{query}, '%') OR w.username LIKE CONCAT('%', #{query}, '%'))
         </if>
-        ORDER BY created_at DESC
+        ORDER BY w.created_at DESC
+    </select>
+
+
+    <!-- 获取浏览量 -->
+    <select id="getViewCount" resultType="int">
+        SELECT view_count FROM works WHERE id = #{workId}
+    </select>
+    <!-- 增加浏览量 -->
+    <update id="incrementViewCount">
+        UPDATE works
+        SET view_count = view_count + 1
+        WHERE id = #{workId}
+    </update>
+
+    <!-- 增加点赞数 -->
+    <update id="incrementLikeCount">
+        UPDATE works
+        SET like_count = like_count + 1
+        WHERE id = #{workId}
+    </update>
+
+    <!-- 减少点赞数 -->
+    <update id="decrementLikeCount">
+        UPDATE works
+        SET like_count = like_count - 1
+        WHERE id = #{workId}
+    </update>
+
+    <!-- 获取点赞数 -->
+    <select id="getLikeCount" resultType="int">
+        SELECT like_count
+        FROM works
+        WHERE id = #{workId}
+    </select>
+    <!--    获取用户所有作品-->
+    <select id="selectByUsername" resultType="com.example.sp20250610.entity.Works">
+        SELECT w.*, u.avatar 
+        FROM `works` w
+        LEFT JOIN `users` u ON w.username = u.username
+        WHERE w.username = #{username}
+    </select>
+
+    <!--根据作品id查询-->
+    <select id="selectById" resultMap="WorksMap">
+        SELECT w.*, u.avatar
+        FROM works w
+        LEFT JOIN users u ON w.username = u.username
+        WHERE w.id = #{id}
     </select>
 
 </mapper>

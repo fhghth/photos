@@ -33,3 +33,8 @@ mybatis:
 file:
   upload:
     path: D:\web\vue20250610\files
+
+# 头像文件存储路径配置
+avatar:
+  upload:
+    path: D:\web\vue20250610\avatars

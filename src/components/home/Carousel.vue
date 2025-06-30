@@ -1,59 +1,87 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { photoApi } from "@/utils/request.js";
 
-const slides = ref([
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1506260408121-e353d10b87c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80",
-    title: "山脉晨曦",
-    author: {
-      name: "张明远",
-      avatar:
-        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80",
-    },
-    stats: {
-      likes: "2.4K",
-      views: "15.7K",
-      comments: 243,
-    },
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80",
-    title: "湖光山色",
-    author: {
-      name: "李思雨",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80",
-    },
-    stats: {
-      likes: "3.1K",
-      views: "22.3K",
-      comments: 417,
-    },
-  },
-  {
-    id: 3,
-    image:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80",
-    title: "森林秘境",
-    author: {
-      name: "陈默",
-      avatar:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80",
-    },
-    stats: {
-      likes: "4.7K",
-      views: "35.2K",
-      comments: 682,
-    },
-  },
-]);
+const router = useRouter();
 
-const currentSlide = ref(0);
-let interval;
+// 获取热门作品
+const loading = ref(true);
+const currentSlide = ref(0); // 统一使用 currentSlide 作为当前索引
+let interval = null;
+const hotWorks = ref([]);
+const slides = ref([]);
+
+// 默认头像
+const defaultAvatar = ref(
+  "https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
+);
+
+// 处理头像URL
+const getAvatarUrl = (avatar) => {
+  if (!avatar) return defaultAvatar.value;
+  if (avatar.startsWith("data:image")) return avatar;
+  if (avatar.startsWith("http")) return avatar;
+  if (avatar.startsWith("/")) return "http://localhost:7080" + avatar;
+  return "http://localhost:7080/avatars/" + avatar;
+};
+
+// 计算当前显示的作品ID
+const currentWorkId = computed(() => {
+  if (hotWorks.value.length === 0) return null;
+  return hotWorks.value[currentSlide.value].id;
+});
+
+const loadHotWorks = async () => {
+  try {
+    loading.value = true;
+    const res = await photoApi.getApproved({});
+
+    if (res.code === "200" && res.data?.length > 0) {
+      hotWorks.value = res.data
+        .map((work) => {
+          const hotScore =
+            (work.likeCount || 0) +
+            (work.viewCount || 0) +
+            (work.commentCount || 0);
+          return { ...work, hotScore };
+        })
+        .sort((a, b) => b.hotScore - a.hotScore)
+        .slice(0, 4);
+
+      // 创建展示数据
+      slides.value = hotWorks.value.map((work) => ({
+        id: work.id,
+        title: work.title,
+        image: work.cover ? `http://localhost:7080/uploads/${work.cover}` : "",
+        author: {
+          name: work.username,
+          avatar: getAvatarUrl(work.avatar),
+        },
+        stats: {
+          likes: work.likeCount || 0,
+          views: work.viewCount || 0,
+          comments: work.commentCount || 0,
+        },
+      }));
+    } else {
+      hotWorks.value = [];
+      slides.value = [];
+    }
+  } catch (error) {
+    console.error("获取热门作品失败:", error);
+    hotWorks.value = [];
+    slides.value = [];
+  } finally {
+    loading.value = false;
+    startAutoCarousel();
+  }
+};
+
+const goToWorkDetail = () => {
+  if (!currentWorkId.value) return;
+  router.push(`/work/${currentWorkId.value}`);
+};
 
 const nextSlide = () => {
   currentSlide.value = (currentSlide.value + 1) % slides.value.length;
@@ -64,20 +92,47 @@ const prevSlide = () => {
     (currentSlide.value - 1 + slides.value.length) % slides.value.length;
 };
 
+// 启动自动轮播
+const startAutoCarousel = () => {
+  if (interval) {
+    clearInterval(interval);
+  }
+  // 确保有幻灯片可轮播
+  if (slides.value.length > 1) {
+    interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+  }
+};
+
+// 计算当前轮播图大图背景
+const currentBgImage = computed(() => {
+  if (slides.value.length === 0) return "";
+  // 用当前轮播图的大图做背景，加深色蒙版
+  return `linear-gradient(rgba(10,20,40,0.85),rgba(10,20,40,0.85)), url('${
+    slides.value[currentSlide.value]?.image || ""
+  }')`;
+});
+
 onMounted(() => {
-  interval = setInterval(nextSlide, 5000);
+  loadHotWorks();
 });
 
 onUnmounted(() => {
-  clearInterval(interval);
+  if (interval) {
+    clearInterval(interval);
+  }
 });
 </script>
 
 <template>
-  <section class="carousel-section">
+  <section
+    class="carousel-section"
+    :style="{ backgroundImage: currentBgImage }"
+  >
     <div class="section-title">
-      <h2>探索视觉艺术</h2>
-      <p>发现全球顶尖摄影师的精彩作品，获取创作灵感</p>
+      <h2>热门摄影作品</h2>
+      <p>根据点赞、浏览和评论综合排序的热门作品</p>
     </div>
 
     <div class="carousel-container">
@@ -87,6 +142,7 @@ onUnmounted(() => {
         class="carousel-slide"
         :class="{ active: currentSlide === index }"
         :style="{ backgroundImage: `url(${slide.image})` }"
+        @click="goToWorkDetail"
       >
         <div class="slide-info">
           <div class="slide-content">
@@ -132,7 +188,10 @@ onUnmounted(() => {
 <style scoped>
 .carousel-section {
   padding: 2rem 5%;
-  background: linear-gradient(to bottom, var(--secondary), var(--primary));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   overflow: hidden;
 }
@@ -179,6 +238,7 @@ onUnmounted(() => {
   background-position: center;
   display: flex;
   align-items: flex-end;
+  cursor: pointer;
 }
 
 .carousel-slide.active {

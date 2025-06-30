@@ -1,6 +1,8 @@
 package com.example.sp20250610.entity;
 
 import lombok.Data;
+import org.apache.tomcat.util.json.JSONFilter;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -18,7 +20,46 @@ public class Works {
     private Timestamp createdAt;
     private String role;
     private String cover;
+    private BigInteger viewCount;
+    private BigInteger commentCount;
+    private BigInteger likeCount;
+    private String avatar;
+
     private List<WorkImage> images;
+
+    private String watermarkConfig;
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getWatermarkConfig() {
+        return watermarkConfig;
+    }
+
+    public void setWatermarkConfig(String watermarkConfig) {
+        this.watermarkConfig = watermarkConfig;
+    }
+
+
+    public BigInteger getCommentCount() {
+        return commentCount;
+    }
+    public void setCommentCount(BigInteger commentCount) {this.commentCount=commentCount;}
+
+    public BigInteger getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(BigInteger likeCount) {this.likeCount=likeCount;}
+
+    public BigInteger getViewCount() {return viewCount;}
+
+    public void setViewCount(BigInteger viewCount) {this.viewCount=viewCount;}
 
     public BigInteger getId() {
         return id;

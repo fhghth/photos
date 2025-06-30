@@ -22,6 +22,30 @@ const works = ref("");
 // 用户状态
 const isLoggedIn = ref(false);
 const userAvatar = ref("");
+
+// 默认头像
+const defaultAvatar = ref(
+  "https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
+);
+
+// 处理头像URL
+const getAvatarUrl = (avatarPath) => {
+  if (!avatarPath) return defaultAvatar.value;
+
+  // 如果是base64数据，直接返回
+  if (avatarPath.startsWith("data:image")) {
+    return avatarPath;
+  }
+
+  // 如果是相对路径，添加baseURL
+  if (avatarPath.startsWith("/")) {
+    return `http://localhost:7080${avatarPath}`;
+  }
+
+  // 如果是完整URL，直接返回
+  return avatarPath;
+};
+
 // 判断是否为管理员
 const isAdmin = computed(() => {
   const userData = JSON.parse(localStorage.getItem("code_user") || "{}");
@@ -34,8 +58,7 @@ const loadUserInfo = () => {
     const userData = JSON.parse(localStorage.getItem("code_user") || "{}");
     if (userData && userData.id) {
       isLoggedIn.value = true;
-      userAvatar.value =
-        userData.avatar || "/src/assets/imgs/default-avatar.jpg";
+      userAvatar.value = getAvatarUrl(userData.avatar);
       userName.value = userData.username || userData.name || "用户";
     } else {
       isLoggedIn.value = false;
@@ -132,7 +155,7 @@ const goToPerson = () => {
 const handleAvatarClick = () => {
   if (isAdmin.value) {
     // 管理员跳转到控制台
-    router.push("/manager/dashboard");
+    router.push("/manager/welcome");
   } else {
     // 普通用户跳转到个人中心
     router.push("/person");
@@ -140,7 +163,7 @@ const handleAvatarClick = () => {
 };
 // 管理员跳转到控制台
 const goToManager = () => {
-  router.push("/manager/dashboard");
+  router.push("/manager/welcome");
 };
 
 //退出登录
@@ -226,6 +249,65 @@ const logout = () => {
 </template>
 
 <style scoped>
+.nav-links li {
+  list-style: none;
+}
+
+.nav-links li a {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+  margin: 0 5px;
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 500;
+  transition: 0.5s;
+  z-index: 1;
+}
+
+.nav-links li a:hover {
+  color: white;
+}
+
+.nav-links li a:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-top: 1px solid var(--highlight);
+  border-bottom: 1px solid var(--highlight);
+  transform: scaleY(2);
+  opacity: 0;
+  transition: 0.5s;
+  z-index: -1;
+  border-radius: 4px;
+}
+
+.nav-links li a:hover:before {
+  transform: scaleY(1.2);
+  opacity: 1;
+}
+
+.nav-links li a:after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--highlight);
+  transform: scale(0);
+  transition: 0.5s;
+  z-index: -1;
+  border-radius: 4px;
+}
+
+.nav-links li a:hover:after {
+  transform: scale(1);
+}
+
 .user-actions {
   display: flex;
   align-items: center;
@@ -290,8 +372,12 @@ const logout = () => {
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   list-style: none;
+  margin: 0;
+  padding: 0;
+  position: static; /* 移除绝对定位 */
+  transform: none; /* 移除居中转换 */
 }
 
 .nav-links a {
@@ -383,7 +469,6 @@ const logout = () => {
   box-shadow: 0 6px 15px rgba(233, 69, 96, 0.4);
 }
 
-/* 添加router-link的样式 */
 .router-link-active {
   color: var(--highlight) !important;
 }

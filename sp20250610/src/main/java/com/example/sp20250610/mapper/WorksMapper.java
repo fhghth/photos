@@ -18,16 +18,6 @@ public interface WorksMapper {
     int insert(Works works);
 
     /**
-     * 根据ID查询作品信息
-     * 这个查询方法对应的XML未提供，这里添加方法声明
-     *
-     * @param id 作品ID
-     * @return 作品对象
-     */
-    @Select("SELECT * FROM works WHERE id = #{id}")
-    Works findById(BigInteger id);
-
-    /**
      * 更新作品封面路径
      *
      * @param id 作品ID
@@ -42,4 +32,32 @@ public interface WorksMapper {
 
     List<Works> findAllApprovedWorks(@Param("query") String query);
 
+    //查询浏览量
+    int getViewCount(BigInteger workId); // 添加新方法
+
+    // 增加浏览量
+    int incrementViewCount(BigInteger workId);
+
+    // 增加点赞数
+    int incrementLikeCount(BigInteger workId);
+
+    // 减少点赞数
+    int decrementLikeCount(BigInteger workId);
+
+    // 获取当前点赞数
+    int getLikeCount(BigInteger workId);
+
+    // 获取用户所有作品
+    List<Works> selectByUsername(@Param("username") String username);
+
+
+    //
+    Works selectById(BigInteger id);
+
+    // 更新审核状态，此处使用@Update注解，简化了sql语句，不需要在xml中再次配置
+    @Update("UPDATE works SET role = #{role} WHERE id = #{id}")
+    int updateReviewStatus(Works work);
+
+
+    void deleteById(BigInteger id);
 }

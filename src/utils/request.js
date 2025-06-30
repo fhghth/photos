@@ -39,7 +39,18 @@ api.interceptors.response.use(
 export const userApi = {
   login: (data) => api.post("/login", data), //用了
   register: (data) => api.post("/register", data), //用了
-  getProfile: () => api.get("/user/profile"),
+  edit: (data) => {
+    // 检查是否为FormData，如果是则设置正确的Content-Type
+    if (data instanceof FormData) {
+      return api.post("/edit", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } else {
+      return api.post("/edit", data);
+    }
+  },
 };
 
 // 作品相关接口
@@ -62,10 +73,30 @@ export const photoApi = {
     }), //用了
 
   // 点赞作品
-  likePhoto: (photoId) => api.post(`/photos/${photoId}/like`),
+  likePhoto: (data) => api.post("/work-stats/like", data), //用了
+
+  //检查点赞
+  checkLikeStatus: (data) => api.get("/work-stats/check", { params: data }), //用了
+
+  // 浏览作品
+  viewPhoto: (data) => api.post("/work-stats/view", data), //用了
+
+  //获取作品评论
+  getComments: (workId) => api.get(`/photos/comments/${workId}`), //用了
+
+  //提交评论
+  submitComment: (data) => api.post("/photos/comment", data), //用了
 
   // 获取作品详情
   getPhotoDetail: (photoId) => api.get(`/photos/detail/${photoId}`), //用了
+
+  // 重新提交作品
+  resubmitPhoto: (workId) => api.put(`/photos/${workId}/resubmit`), //用了
+
+  // 删除作品
+  deletePhoto: (workId) => api.delete(`/photos/delete/${workId}`), //用了
+  // 获取用户所有作品（带分页）
+  getAllPhotos: (params) => api.get("/photos/user", { params }),
 };
 
 // 分类相关接口
@@ -78,6 +109,13 @@ export const categoryApi = {
 //管理员仪表盘接口
 // ===================== 管理员仪表盘接口 =====================
 export const adminApi = {
+  //获取评论列表
+  getCommentsList: (params) => api.get(`/admin/commentsList`, { params }), //用了
+
+  //删除评论
+  deleteComment: (id, workId) =>
+    api.delete(`/admin/deleteComment/${id}/${workId}`),
+
   // 用户管理接口
   user: {
     // 获取用户列表（带分页和角色过滤）
@@ -102,8 +140,11 @@ export const adminApi = {
 
   // 内容管理接口
   content: {
+    // 获取所有作品信息（管理员视图）
+    getAllPhotos: (params) => api.get("/admin/allPhotos", { params }), //用了
+
     // 获取所有作品信息（管理员视图）（用于地图）
-    getAllPhotos: (params) => api.get("/admin/photos", { params }), //用了
+    getAllPhotosMap: (params) => api.get("/admin/photosMap", { params }), //用了
 
     // 获取待审核作品
     getPendingPhotos: (params) => api.get("/admin/photosPending", { params }), //用了

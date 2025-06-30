@@ -1,18 +1,23 @@
 <template>
   <!-- 基本信息 -->
   <div class="message">
-    <!-- Logo -->
+    <!-- 用户头像和姓名 -->
     <div class="logo">
-      <img class="logo-img" :src="siteLogo" alt="logo" />
+      <img
+        class="logo-img"
+        :src="userAvatar"
+        alt="用户头像"
+        @error="handleAvatarError"
+      />
       <div
         :class="{
           name: true,
           'text-hidden': true,
-          long: siteUrl[0].length >= 6,
+          long: userName.length >= 6,
         }"
       >
-        <span class="bg">{{ siteUrl[0] }}</span>
-        <span class="sm">.{{ siteUrl[1] }}</span>
+        <span class="bg">{{ userName }}</span>
+        <span class="sm">.{{ userRole }}</span>
       </div>
     </div>
     <!-- 简介 -->
@@ -40,23 +45,65 @@ import { Icon } from "@vicons/utils";
 import { QuoteLeft, QuoteRight } from "@vicons/fa";
 import { Error } from "@icon-park/vue-next";
 import { mainStore } from "@/store";
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, watch, ref } from "vue";
 
 const store = mainStore();
 
-// 主页站点logo
-const siteLogo = import.meta.env.VITE_SITE_MAIN_LOGO;
-// 站点链接
-const siteUrl = computed(() => {
-  const url = import.meta.env.VITE_SITE_URL;
-  if (!url) return "光影".split(".");
-  // 判断协议前缀
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    const urlFormat = url.replace(/^(https?:\/\/)/, "");
-    return urlFormat.split(".");
+// 默认头像
+const defaultAvatar = ref(
+  "https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
+);
+
+// 处理头像URL
+const getAvatarUrl = (avatarPath) => {
+  if (!avatarPath) return defaultAvatar.value;
+
+  // 如果是base64数据，直接返回
+  if (avatarPath.startsWith("data:image")) {
+    return avatarPath;
   }
-  return url.split(".");
+
+  // 如果是相对路径，添加baseURL
+  if (avatarPath.startsWith("/")) {
+    return `http://localhost:7080${avatarPath}`;
+  }
+
+  // 如果是完整URL，直接返回
+  return avatarPath;
+};
+
+// 获取用户信息
+const currentUser = ref(
+  JSON.parse(localStorage.getItem("code_user")) || {
+    username: "游客",
+    avatar: "",
+    id: null,
+    role: "user",
+  }
+);
+
+// 用户头像
+const userAvatar = computed(() => {
+  return getAvatarUrl(currentUser.value.avatar);
 });
+
+// 用户名
+const userName = computed(() => {
+  return currentUser.value.username || "游客";
+});
+
+// 用户角色
+const userRole = computed(() => {
+  const role = currentUser.value.role;
+  if (role === "0") return "管理员";
+  if (role === "1") return "用户";
+  return "其他";
+});
+
+// 头像错误处理
+const handleAvatarError = (e) => {
+  e.target.src = defaultAvatar.value;
+};
 
 // 简介区域文字
 const descriptionText = reactive({
@@ -93,6 +140,28 @@ watch(
     }
   }
 );
+
+// 监听localStorage变化，实时更新用户信息
+const updateUserInfo = () => {
+  try {
+    const userData = JSON.parse(localStorage.getItem("code_user") || "{}");
+    if (userData && userData.id) {
+      currentUser.value = userData;
+    }
+  } catch (error) {
+    console.error("更新用户信息失败:", error);
+  }
+};
+
+// 监听storage事件
+window.addEventListener("storage", (event) => {
+  if (event.key === "code_user") {
+    updateUserInfo();
+  }
+});
+
+// 初始化时更新用户信息
+updateUserInfo();
 </script>
 
 <style lang="scss" scoped>

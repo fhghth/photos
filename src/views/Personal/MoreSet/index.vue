@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div
     class="set"
     @mouseenter="closeShow = true"
@@ -74,7 +74,7 @@ import {
   Bug,
 } from "@icon-park/vue-next";
 import { mainStore } from "@/store";
-import Set from "@/components/personal/Set.vue";
+// import Set from "@/components/personal/Set.vue";
 import config from "@/../package.json";
 import { ref, computed, reactive } from "vue";
 
@@ -268,4 +268,4 @@ const jumpTo = (url) => {
     }
   }
 }
-</style>
+</style> -->

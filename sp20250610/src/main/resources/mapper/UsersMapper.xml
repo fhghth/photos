@@ -3,9 +3,24 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="com.example.sp20250610.mapper.UsersMapper">
+<!--    修改-->
+    <update id="update">
+        UPDATE users
+        SET username=#{username},
+            email=#{email},
+            password=#{password},
+            phone= #{phone},
+            avatar=#{avatar}
+        WHERE id = #{id}
+    </update>
 
     <select id="selectAll" resultType="com.example.sp20250610.entity.Users">
         select * from `users` order by id desc
+    </select>
+
+
+    <select id="selectById" resultType="com.example.sp20250610.entity.Users">
+        SELECT * FROM users WHERE id = #{id}
     </select>
 
     <!-- 根据用户名查询 -->

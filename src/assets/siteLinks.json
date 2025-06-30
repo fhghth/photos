@@ -5,9 +5,9 @@
     "link": "/uploadmodal"
   },
   {
-    "icon": "Cloud",
-    "name": "网盘",
-    "link": ""
+    "icon": "Book",
+    "name": "我的作品",
+    "link": "/mywork,已经创建内部路由,内部跳转的可以不用写link了!!耶"
   },
   {
     "icon": "CompactDisc",
@@ -20,14 +20,14 @@
     "link": ""
   },
   {
-    "icon": "Book",
+    "icon": "Cloud",
     "name": "网址集",
     "link": ""
   },
   {
     "icon": "Fire",
-    "name": "今日热榜",
-    "link": ""
+    "name": "编辑资料",
+    "link": "/editmy"
   },
   {
     "icon": "LaptopCode",

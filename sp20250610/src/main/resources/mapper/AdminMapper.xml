@@ -31,5 +31,35 @@
         WHERE id = #{id}
     </select>
 
+<!--    查询所有评论-->
+    <select id="selectAllComment" resultMap="commentWithWorkMap">
+        SELECT c.*, w.title AS workTitle
+        FROM work_comments c
+        LEFT JOIN works w ON c.work_id = w.id
+        WHERE c.is_deleted = 0
+        ORDER BY c.id DESC
+    </select>
+
+    <resultMap id="commentWithWorkMap" type="com.example.sp20250610.entity.WorkComments">
+        <id property="id" column="id"/>
+        <result property="workId" column="work_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="comment" column="comment"/>
+        <result property="commentTime" column="comment_time"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="parentCommentId" column="parent_comment_id"/>
+        <result property="avatar" column="avatar"/>
+        <result property="workTitle" column="workTitle"/>
+    </resultMap>
+    
+
+    <delete id="deleteComment">
+        DELETE FROM work_comments WHERE id = #{id}
+    </delete>
+
+    <update id="decrementCommentCount">
+        UPDATE works SET comment_count = comment_count - 1 WHERE id = #{workId}
+    </update>
 
 </mapper>

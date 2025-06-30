@@ -5,19 +5,12 @@ import Carousel from "../components/home/Carousel.vue";
 import PhotoGrid from "../components/home/PhotoGrid.vue";
 import FeaturedSeries from "../components/home/FeaturedSeries.vue";
 import Footer from "../components/layout/Footer.vue";
-
-const showUploadModal = ref(false);
-
-const handleUpload = (data) => {
-  console.log("上传数据:", data);
-  // TODO: 处理上传逻辑
-  showUploadModal.value = false;
-};
 </script>
 
 <template>
+  <el-backtop :right="100" :bottom="100" />
   <div class="home">
-    <Navbar @upload="showUploadModal = true" />
+    <Navbar />
     <main>
       <Carousel />
       <PhotoGrid />

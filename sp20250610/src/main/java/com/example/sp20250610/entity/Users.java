@@ -1,5 +1,7 @@
 package com.example.sp20250610.entity;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class Users {
     private Integer id;
     private String username;
@@ -8,6 +10,26 @@ public class Users {
     private String phone;
     private String email;
     private String role;
+    private String avatar;
+
+    // 添加用于接收头像文件的临时字段（不持久化到数据库）
+    private MultipartFile avatarFile;
+
+    public MultipartFile getAvatarFile() {
+        return avatarFile;
+    }
+
+    public void setAvatarFile(MultipartFile avatarFile) {
+        this.avatarFile = avatarFile;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     public Integer getId() {
         return id;

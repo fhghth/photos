@@ -13,16 +13,18 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 const handleSelect = (key, keyPath) => {
-  if (key === "/manager/home") {
-    router.push("/manager/home");
+  if (key === "/manager/welcome") {
+    router.push("/manager/welcome");
   } else if (key === "1-1") {
     router.push("/manager/dashboard/user");
   } else if (key === "1-2") {
     router.push("/manager/dashboard/admin");
   } else if (key === "2-1") {
-    router.push("/manager/dashboard/works");
+    router.push("/manager/dashboard/allworks");
   } else if (key === "2-2") {
     router.push("/manager/dashboard/works");
+  } else if (key === "2-3") {
+    router.push("/manager/dashboard/comments");
   }
 };
 
@@ -43,14 +45,14 @@ const handleClose = (key, keyPath) => {
       <div>
         <el-col>
           <el-menu
-            default-active="/manager/home"
+            default-active="/manager/welcome"
             class="el-menu-vertical-demo"
             @select="handleSelect"
             @open="handleOpen"
             @close="handleClose"
             style="min-height: calc(100vh - 60px)"
           >
-            <el-menu-item index="/manager/home">
+            <el-menu-item index="/manager/welcome">
               <el-icon><House /></el-icon>
               <span>首页</span>
             </el-menu-item>
@@ -66,10 +68,6 @@ const handleClose = (key, keyPath) => {
               <el-menu-item-group title="Group Two">
                 <el-menu-item index="1-3">item three</el-menu-item>
               </el-menu-item-group>
-              <el-sub-menu index="1-4">
-                <template #title>item four</template>
-                <el-menu-item index="1-4-1">item one</el-menu-item>
-              </el-sub-menu>
             </el-sub-menu>
             <el-sub-menu index="2">
               <template #title>
@@ -77,15 +75,13 @@ const handleClose = (key, keyPath) => {
                 <span>内容管理</span>
               </template>
               <el-menu-item-group title="内容管理">
-                <el-menu-item index="2-1">作品管理</el-menu-item>
-                <el-menu-item index="2-2">评论管理</el-menu-item>
+                <el-menu-item index="2-1">所有作品</el-menu-item>
+                <el-menu-item index="2-2">作品审核</el-menu-item>
+                <el-menu-item index="2-3">评论管理</el-menu-item>
               </el-menu-item-group>
             </el-sub-menu>
-            <el-menu-item index="3" disabled>
-              <el-icon><document /></el-icon>
-              <span>Navigator Three</span>
-            </el-menu-item>
-            <el-menu-item index="4">
+
+            <el-menu-item index="3">
               <el-icon><setting /></el-icon>
               <span>Navigator Four</span>
             </el-menu-item>

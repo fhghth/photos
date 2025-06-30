@@ -2,6 +2,7 @@ package com.example.sp20250610.controller;
 
 import com.example.sp20250610.common.Result;
 import com.example.sp20250610.entity.Users;
+import com.example.sp20250610.entity.WorkComments;
 import com.example.sp20250610.entity.Works;
 import com.example.sp20250610.service.AdminService;
 import com.github.pagehelper.PageInfo;
@@ -37,10 +38,18 @@ public class AdminController {
         return Result.success(pageInfo);
     }
 
-    //内容信息（作品、评论等）
-    @GetMapping("/photos")
+    //内容信息（作品等）
+    @GetMapping("/allPhotos")
+    public Result photos(@RequestParam(defaultValue = "1") Integer pageNum,
+                         @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageInfo<Works>worksList = adminService.selectAllWorks(pageNum,pageSize);
+        return Result.success(worksList);
+    }
+
+    //作品地图
+    @GetMapping("/photosMap")
     public Result photos() {
-        List<Works>worksList = adminService.selectAllWorks();
+        List<Works>worksList = adminService.selectAllWorksMap();
         return Result.success(worksList);
     }
 
@@ -66,6 +75,21 @@ public class AdminController {
     public Result rejectWork(@PathVariable BigInteger id) {
         adminService.rejectWork(id);
         return Result.success("作品已退回");
+    }
+
+    //获取评论列表
+    @GetMapping("/commentsList")
+    public Result comment(@RequestParam(defaultValue = "1") Integer pageNum,
+                         @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageInfo<WorkComments>commentList = adminService.selectAllComment(pageNum,pageSize);
+        return Result.success(commentList);
+    }
+
+    //删除评论
+    @DeleteMapping("/deleteComment/{id}/{workId}")
+    public Result deleteComment(@PathVariable BigInteger id, @PathVariable BigInteger workId) {
+        adminService.deleteComment(id, workId);
+        return Result.success("评论已删除");
     }
 
 }
